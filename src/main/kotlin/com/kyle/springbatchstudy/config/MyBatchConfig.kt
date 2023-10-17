@@ -25,10 +25,20 @@ class MyBatchConfig {
     @Bean
     fun step(jobRepository: JobRepository, transactionManager: JdbcTransactionManager): Step {
         return StepBuilder("step1", jobRepository)
-            .tasklet(Tasklet { contribution, chunkContext ->
-                             println("Hello World!")
-                RepeatStatus.FINISHED
-            }, transactionManager)
+            .tasklet(helloWorldTasklet(), transactionManager)
             .build()
+    }
+
+    @Bean
+    fun helloWorldTasklet(): Tasklet {
+
+        return Tasklet { contribution, chunkContext ->
+            val name = chunkContext.stepContext
+                .jobParameters["-name"] as String
+
+            println("Hello, $name!")
+
+            RepeatStatus.FINISHED
+        }
     }
 }

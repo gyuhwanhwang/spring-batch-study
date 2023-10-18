@@ -27,7 +27,7 @@ class MyBatchConfig {
 
         val defaultJobParametersValidator = DefaultJobParametersValidator(
             arrayOf("fileName"),
-            arrayOf("name", "run.id")
+            arrayOf("name", "currentDate")
         )
 
         defaultJobParametersValidator.afterPropertiesSet()
@@ -43,7 +43,7 @@ class MyBatchConfig {
     @Bean
     fun job(jobRepository: JobRepository, step1: Step): Job {
         return JobBuilder("myJob", jobRepository)
-            .incrementer(RunIdIncrementer())
+            .incrementer(DailyJobTimeStamper())
             .validator(validator())
             .start(step1)
             .build()

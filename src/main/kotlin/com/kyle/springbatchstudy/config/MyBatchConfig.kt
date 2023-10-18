@@ -8,6 +8,7 @@ import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.job.CompositeJobParametersValidator
 import org.springframework.batch.core.job.DefaultJobParametersValidator
 import org.springframework.batch.core.job.builder.JobBuilder
+import org.springframework.batch.core.launch.support.RunIdIncrementer
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.core.step.tasklet.Tasklet
@@ -26,7 +27,7 @@ class MyBatchConfig {
 
         val defaultJobParametersValidator = DefaultJobParametersValidator(
             arrayOf("fileName"),
-            arrayOf("name")
+            arrayOf("name", "run.id")
         )
 
         defaultJobParametersValidator.afterPropertiesSet()
@@ -42,6 +43,7 @@ class MyBatchConfig {
     @Bean
     fun job(jobRepository: JobRepository, step1: Step): Job {
         return JobBuilder("myJob", jobRepository)
+            .incrementer(RunIdIncrementer())
             .validator(validator())
             .start(step1)
             .build()

@@ -45,6 +45,7 @@ class MyBatchConfig {
         return JobBuilder("myJob", jobRepository)
             .incrementer(DailyJobTimeStamper())
             .validator(validator())
+            .listener(JobLoggerListener())
             .start(step1)
             .build()
     }

@@ -9,6 +9,7 @@ import org.springframework.batch.core.job.CompositeJobParametersValidator
 import org.springframework.batch.core.job.DefaultJobParametersValidator
 import org.springframework.batch.core.job.builder.JobBuilder
 import org.springframework.batch.core.launch.support.RunIdIncrementer
+import org.springframework.batch.core.listener.JobListenerFactoryBean
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.core.step.tasklet.Tasklet
@@ -45,7 +46,8 @@ class MyBatchConfig {
         return JobBuilder("myJob", jobRepository)
             .incrementer(DailyJobTimeStamper())
             .validator(validator())
-            .listener(JobLoggerListener())
+            .listener(JobListenerFactoryBean.getListener(
+                JobLoggerListener()))
             .start(step1)
             .build()
     }

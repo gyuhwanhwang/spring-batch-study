@@ -26,3 +26,18 @@ class HelloWorld: Tasklet {
         return RepeatStatus.FINISHED
     }
 }
+
+class GoodBye: Tasklet {
+
+    companion object {
+        private const val GOOD_BYE = "GoodBye, %s"
+    }
+
+    override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus? {
+        val name = chunkContext.stepContext
+            .jobParameters["name"] as String
+
+        println(String.format(GOOD_BYE, name))
+        return RepeatStatus.FINISHED
+    }
+}

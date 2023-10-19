@@ -55,27 +55,7 @@ class MyBatchConfig {
     @Bean
     fun step(jobRepository: JobRepository, transactionManager: JdbcTransactionManager): Step {
         return StepBuilder("step1", jobRepository)
-            .tasklet(helloWorldTasklet(null, null), transactionManager)
+            .tasklet(HelloWorld(), transactionManager)
             .build()
     }
-
-    @StepScope
-    @Bean
-    fun helloWorldTasklet(
-        @Value("#{jobParameters['name']}") name: String?,
-        @Value("#{jobParameters['fileName']}") fileName: String?,
-    ): Tasklet {
-
-        return Tasklet { contribution, chunkContext ->
-//            val name = chunkContext.stepContext
-//                .jobParameters["-name"] as String
-
-            println("Hello, $name!")
-            println("fileName = $fileName")
-
-            RepeatStatus.FINISHED
-        }
-    }
-
-
 }

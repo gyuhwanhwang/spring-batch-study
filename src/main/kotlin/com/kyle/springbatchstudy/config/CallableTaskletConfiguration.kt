@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.jdbc.support.JdbcTransactionManager
 import java.util.concurrent.Callable
 
-@Configuration
+//@Configuration
 class CallableTaskletConfiguration {
 
     companion object : Log()

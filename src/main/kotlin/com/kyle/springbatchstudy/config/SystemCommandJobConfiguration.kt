@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.core.task.SimpleAsyncTaskExecutor
 import org.springframework.jdbc.support.JdbcTransactionManager
 
-@Configuration
+//@Configuration
 class SystemCommandJobConfiguration {
 
     @Bean

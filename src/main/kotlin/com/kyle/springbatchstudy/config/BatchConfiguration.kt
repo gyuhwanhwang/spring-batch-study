@@ -19,7 +19,7 @@ import org.springframework.core.io.Resource
 import org.springframework.core.io.WritableResource
 import org.springframework.jdbc.support.JdbcTransactionManager
 
-@Configuration
+//@Configuration
 class BatchConfiguration {
 
     @Bean

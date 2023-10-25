@@ -32,9 +32,10 @@ class ChunkJob {
     @Bean
     fun chunkStep(jobRepository: JobRepository, transactionManager: JdbcTransactionManager): Step {
         return StepBuilder("chunkStep", jobRepository)
-            .chunk<String, String>(randomChunkSizePolicy(), transactionManager)
+            .chunk<String, String>(10_000, transactionManager)
             .reader(itemReader())
             .writer(itemWriter())
+            .listener(LoggingStepStartStopListener())
             .build()
     }
 
@@ -52,7 +53,7 @@ class ChunkJob {
 //        }
 //
 //        return ListItemReader(items)
-        val items = List(100_000) { UUID.randomUUID().toString() }
+        val items = List(10_000) { UUID.randomUUID().toString() }
         return ListItemReader(items)
     }
 

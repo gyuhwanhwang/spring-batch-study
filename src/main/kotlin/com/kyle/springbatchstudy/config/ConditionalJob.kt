@@ -52,7 +52,7 @@ class ConditionalJob {
         return JobBuilder("conditionalJob", jobRepository)
             .incrementer(DailyJobTimeStamper())
             .start(firstStep)
-            .on("FAILED").end()
+            .on("FAILED").fail()
             .from(firstStep).on("*").to(successStep)
             .end()
             .build()

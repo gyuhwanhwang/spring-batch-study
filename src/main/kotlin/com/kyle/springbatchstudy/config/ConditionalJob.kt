@@ -25,7 +25,7 @@ class ConditionalJob {
         return Tasklet { contribution, chunkContext ->
             println("First~")
             RepeatStatus.FINISHED
-//            throw RuntimeException("This is a failure")
+            throw RuntimeException("This is a failure")
         }
     }
 
@@ -52,11 +52,8 @@ class ConditionalJob {
         return JobBuilder("conditionalJob", jobRepository)
             .incrementer(DailyJobTimeStamper())
             .start(firstStep)
-            .next(decider())
-            .from(decider())
-            .on("FAILED").to(failureStep)
-            .from(decider())
-            .on("*").to(successStep)
+            .on("FAILED").end()
+            .from(firstStep).on("*").to(successStep)
             .end()
             .build()
     }

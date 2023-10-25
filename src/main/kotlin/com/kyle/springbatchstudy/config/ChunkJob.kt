@@ -8,6 +8,8 @@ import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.support.ListItemReader
 import org.springframework.batch.repeat.CompletionPolicy
+import org.springframework.batch.repeat.RepeatContext
+import org.springframework.batch.repeat.RepeatStatus
 import org.springframework.batch.repeat.policy.CompositeCompletionPolicy
 import org.springframework.batch.repeat.policy.SimpleCompletionPolicy
 import org.springframework.batch.repeat.policy.TimeoutTerminationPolicy
@@ -30,10 +32,15 @@ class ChunkJob {
     @Bean
     fun chunkStep(jobRepository: JobRepository, transactionManager: JdbcTransactionManager): Step {
         return StepBuilder("chunkStep", jobRepository)
-            .chunk<String, String>(completionPolicy(), transactionManager)
+            .chunk<String, String>(randomChunkSizePolicy(), transactionManager)
             .reader(itemReader())
             .writer(itemWriter())
             .build()
+    }
+
+    @Bean
+    fun randomChunkSizePolicy(): CompletionPolicy {
+        return RandomChunkSizePolicy()
     }
 
     @Bean
@@ -64,6 +71,38 @@ class ChunkJob {
         ))
 
         return policy
+    }
+
+}
+
+class RandomChunkSizePolicy(
+    private var chunkSize: Int = 0,
+    private var totalProcessed: Int = 0,
+    private val random: Random = Random()) : CompletionPolicy{
+
+    override fun isComplete(context: RepeatContext, result: RepeatStatus): Boolean {
+        return if (RepeatStatus.FINISHED == result) {
+            true
+        } else {
+            isComplete(context)
+        }
+    }
+
+    override fun isComplete(context: RepeatContext): Boolean {
+        return totalProcessed >= chunkSize
+    }
+
+    override fun start(parent: RepeatContext): RepeatContext {
+        chunkSize = random.nextInt(20)
+        totalProcessed = 0
+
+        println("The chunk size has been set to $chunkSize")
+
+        return parent
+    }
+
+    override fun update(context: RepeatContext) {
+        totalProcessed++
     }
 
 }

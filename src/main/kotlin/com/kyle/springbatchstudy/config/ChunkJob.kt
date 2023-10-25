@@ -7,6 +7,10 @@ import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.support.ListItemReader
+import org.springframework.batch.repeat.CompletionPolicy
+import org.springframework.batch.repeat.policy.CompositeCompletionPolicy
+import org.springframework.batch.repeat.policy.SimpleCompletionPolicy
+import org.springframework.batch.repeat.policy.TimeoutTerminationPolicy
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.jdbc.support.JdbcTransactionManager
@@ -18,6 +22,7 @@ class ChunkJob {
     @Bean
     fun chunkBasedJob(jobRepository: JobRepository, transactionManager: JdbcTransactionManager): Job {
         return JobBuilder("chunkBasedJob", jobRepository)
+            .incrementer(DailyJobTimeStamper())
             .start(chunkStep(jobRepository, transactionManager))
             .build()
     }
@@ -25,7 +30,7 @@ class ChunkJob {
     @Bean
     fun chunkStep(jobRepository: JobRepository, transactionManager: JdbcTransactionManager): Step {
         return StepBuilder("chunkStep", jobRepository)
-            .chunk<String, String>(1000, transactionManager)
+            .chunk<String, String>(completionPolicy(), transactionManager)
             .reader(itemReader())
             .writer(itemWriter())
             .build()
@@ -47,6 +52,18 @@ class ChunkJob {
     @Bean
     fun itemWriter(): ItemWriter<String> {
         return ItemWriter { println(">> current item = $it") }
+    }
+
+    @Bean
+    fun completionPolicy(): CompletionPolicy {
+        val policy = CompositeCompletionPolicy()
+
+        policy.setPolicies(arrayOf(
+            TimeoutTerminationPolicy(3),
+            SimpleCompletionPolicy(1000)
+        ))
+
+        return policy
     }
 
 }

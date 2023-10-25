@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.jdbc.support.JdbcTransactionManager
 import java.util.*
 
-@Configuration
+//@Configuration
 class ChunkJob {
 
     @Bean

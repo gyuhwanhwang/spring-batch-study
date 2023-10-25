@@ -1,8 +1,12 @@
 package com.kyle.springbatchstudy.config
 
 import org.springframework.batch.core.Job
+import org.springframework.batch.core.JobExecution
 import org.springframework.batch.core.Step
+import org.springframework.batch.core.StepExecution
 import org.springframework.batch.core.job.builder.JobBuilder
+import org.springframework.batch.core.job.flow.FlowExecutionStatus
+import org.springframework.batch.core.job.flow.JobExecutionDecider
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.core.step.tasklet.Tasklet
@@ -11,6 +15,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.jdbc.support.JdbcTransactionManager
 import java.lang.RuntimeException
+import java.util.Random
 
 @Configuration
 class ConditionalJob {
@@ -18,8 +23,9 @@ class ConditionalJob {
     @Bean
     fun passTasklet(): Tasklet {
         return Tasklet { contribution, chunkContext ->
+            println("First~")
             RepeatStatus.FINISHED
-            throw RuntimeException("This is a failure")
+//            throw RuntimeException("This is a failure")
         }
     }
 
@@ -46,10 +52,18 @@ class ConditionalJob {
         return JobBuilder("conditionalJob", jobRepository)
             .incrementer(DailyJobTimeStamper())
             .start(firstStep)
+            .next(decider())
+            .from(decider())
             .on("FAILED").to(failureStep)
-            .from(firstStep).on("*").to(successStep)
+            .from(decider())
+            .on("*").to(successStep)
             .end()
             .build()
+    }
+
+    @Bean
+    fun decider(): JobExecutionDecider {
+        return RandomDecider()
     }
 
     @Bean
@@ -72,4 +86,19 @@ class ConditionalJob {
             .tasklet(failTasklet(), transactionManager)
             .build()
     }
+}
+
+class RandomDecider(private val random: Random = Random()) : JobExecutionDecider {
+
+    override fun decide(jobExecution: JobExecution, stepExecution: StepExecution?): FlowExecutionStatus {
+        println("Decider Start")
+        return if (random.nextBoolean()) {
+            println("will COMPLETED")
+            FlowExecutionStatus(FlowExecutionStatus.COMPLETED.name)
+        } else {
+            println("will FAILED")
+            FlowExecutionStatus(FlowExecutionStatus.FAILED.name)
+        }
+    }
+
 }

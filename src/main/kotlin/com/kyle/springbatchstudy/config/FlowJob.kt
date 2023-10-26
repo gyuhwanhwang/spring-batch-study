@@ -9,6 +9,7 @@ import org.springframework.batch.core.job.flow.Flow
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.scope.context.ChunkContext
 import org.springframework.batch.core.step.builder.StepBuilder
+import org.springframework.batch.core.step.job.DefaultJobParametersExtractor
 import org.springframework.batch.core.step.tasklet.Tasklet
 import org.springframework.batch.repeat.RepeatStatus
 import org.springframework.context.annotation.Bean
@@ -52,7 +53,17 @@ class FlowJob {
 
     @Bean
     fun preProcessingFlow(jobRepository: JobRepository, transactionManager: JdbcTransactionManager): Flow {
-        return FlowBuilder<Flow>("preProcessingFlow").start(loadFileStep(jobRepository, transactionManager))
+        return FlowBuilder<Flow>("preProcessingFlow")
+            .start(loadFileStep(jobRepository, transactionManager))
+            .next(loadCustomerStep(jobRepository, transactionManager))
+            .next(updateStartStep(jobRepository, transactionManager))
+            .build()
+    }
+
+    @Bean
+    fun preProcessingJob(jobRepository: JobRepository, transactionManager: JdbcTransactionManager): Job {
+        return JobBuilder("preProcessing", jobRepository)
+            .start(loadFileStep(jobRepository, transactionManager))
             .next(loadCustomerStep(jobRepository, transactionManager))
             .next(updateStartStep(jobRepository, transactionManager))
             .build()
@@ -70,7 +81,8 @@ class FlowJob {
     @Bean
     fun initializeBatch(jobRepository: JobRepository, transactionManager: JdbcTransactionManager): Step {
         return StepBuilder("initalizeBatch", jobRepository)
-            .flow(preProcessingFlow(jobRepository, transactionManager))
+            .job(preProcessingJob(jobRepository, transactionManager))
+            .parametersExtractor(DefaultJobParametersExtractor())
             .build()
     }
 

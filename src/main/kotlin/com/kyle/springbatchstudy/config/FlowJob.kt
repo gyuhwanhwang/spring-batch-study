@@ -62,9 +62,15 @@ class FlowJob {
     fun conditionalStepLogicJob(jobRepository: JobRepository, transactionManager: JdbcTransactionManager): Job {
         return JobBuilder("conditionalStepLogicJob", jobRepository)
             .incrementer(DailyJobTimeStamper())
-            .start(preProcessingFlow(jobRepository, transactionManager))
+            .start(initializeBatch(jobRepository, transactionManager))
             .next(runBatch(jobRepository, transactionManager))
-            .end()
+            .build()
+    }
+
+    @Bean
+    fun initializeBatch(jobRepository: JobRepository, transactionManager: JdbcTransactionManager): Step {
+        return StepBuilder("initalizeBatch", jobRepository)
+            .flow(preProcessingFlow(jobRepository, transactionManager))
             .build()
     }
 

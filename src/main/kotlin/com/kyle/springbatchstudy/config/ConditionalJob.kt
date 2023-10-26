@@ -17,7 +17,7 @@ import org.springframework.jdbc.support.JdbcTransactionManager
 import java.lang.RuntimeException
 import java.util.Random
 
-@Configuration
+//@Configuration
 class ConditionalJob {
 
     @Bean
